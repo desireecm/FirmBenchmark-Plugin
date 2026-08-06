@@ -1,0 +1,9 @@
+{
+  "name": "firmbenchmark",
+  "version": "1.0.0",
+  "description": "FirmBenchmark™ — AI & SEO audit pipeline for law firm prospects. Checks Ahrefs project status, verifies Home Run keyword tags, pulls live data, tests AI visibility, and generates a 27-page PDF audit report and 10-slide PPTX sales deck.",
+  "author": {
+    "name": "Esquire Interactive"
+  },
+  "keywords": ["legal marketing", "law firm SEO", "AI visibility", "Ahrefs", "benchmark report"]
+}

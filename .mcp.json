@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "ahrefs": {
+      "type": "url",
+      "url": "https://api.ahrefs.com/mcp/mcp",
+      "description": "Ahrefs — Site Explorer, Rank Tracker, Brand Radar, management tools"
+    },
+    "microsoft365": {
+      "type": "url",
+      "url": "https://microsoft365.mcp.claude.com/mcp",
+      "description": "Microsoft 365 — Outlook, Teams (used for notification email composition)"
+    }
+  }
+}

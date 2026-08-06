@@ -1,0 +1,143 @@
+{
+  "firmSlug": "shapiro-washburn-sharp",
+  "name": "Shapiro, Washburn & Sharp",
+  "city": "Virginia Beach, VA",
+  "state": "Virginia",
+  "primaryPA": "Personal Injury",
+  "allPAs": "Personal Injury, Car Accidents, Truck Accidents, Medical Malpractice, Railroad/FELA, Wrongful Death",
+  "website": "hsinjurylaw.com",
+  "month": "August 2026",
+  "coverHeadline": "40 Years of Wins.\nNot Enough Rankings.",
+  "coverSub": "Here\u2019s what the data says.",
+
+  "firmProfile": {
+    "founded": "1985",
+    "description": "40-year Virginia Beach personal injury firm with $100M+ in recoveries and three Super Lawyers-recognized named partners",
+    "address": "4705 Columbus Street, Suite 304, Virginia Beach, VA 23462",
+    "phone": "(757) 460-7776",
+    "attorneys": [
+      "Richard N. (Rick) Shapiro",
+      "Eric K. Washburn",
+      "Kevin D. Sharp",
+      "Randy Appleton"
+    ],
+    "credentials": "Best Lawyers 2026, Virginia Super Lawyers 2026, Virginia Lawyers Weekly Hall of Fame 2026, AV Preeminent (Martindale-Hubbell)"
+  },
+
+  "metrics": {
+    "dr": 28,
+    "orgKeywords": 476,
+    "orgKeywordsTop3": 122,
+    "orgTraffic": 1594,
+    "trafficValue": 20514,
+    "refDomains": 47
+  },
+
+  "aiScore": 8,
+
+  "grades": {
+    "searchAuthority": { "letter": "C",  "note": "DR 28 vs Cooper Hurley DR 49" },
+    "keywordCoverage": { "letter": "C+", "note": "476 kws, 122 top-3" },
+    "aiVisibility":   { "letter": "C-", "note": "Score: 8 / 25" },
+    "localEntity":    { "letter": "C",  "note": "Good foundation, gaps present" },
+    "technicalHealth":{ "letter": "C",  "note": "Full audit pending" },
+    "overall":        { "letter": "C",  "note": "Room to lead this market" }
+  },
+
+  "competitors": [
+    {
+      "name": "Cooper Hurley Injury Lawyers",
+      "domain": "cooperhurley.com",
+      "dr": 49, "traffic": 5251, "trafficValue": 61531,
+      "keywords": 618, "refDomains": 190, "aiScore": 19, "sovPct": 61,
+      "description": "Dominant market position. Ranks #1\u20132 for most high-value practice-area terms and holds 61% AI share of voice in the Virginia Beach market."
+    },
+    {
+      "name": "Breit Biniazan",
+      "domain": "bbtrial.com",
+      "dr": 33, "traffic": 3260, "trafficValue": 21078,
+      "keywords": 533, "refDomains": 87, "aiScore": 12, "sovPct": 24,
+      "description": "Strong regional presence with DR 33 and an AI visibility score of approximately 12/25. Their nearest DR advantage over the firm is 5 points."
+    },
+    {
+      "name": "Joel Bieber Firm",
+      "domain": "joelbieber.com",
+      "dr": 25, "traffic": 4671, "trafficValue": 37607,
+      "keywords": 1024, "refDomains": 62, "aiScore": 9, "sovPct": 11,
+      "description": "High keyword volume (1,024 ranking keywords) despite lower domain authority. More than double the firm\u2019s keyword count, suggesting a strong content investment."
+    }
+  ],
+
+  "keywords": [
+    { "term": "personal injury lawyer virginia beach",     "position": 5,  "volume": 250,  "kd": 38, "comp1Position": 2 },
+    { "term": "personal injury attorney virginia beach",   "position": 4,  "volume": 150,  "kd": 54, "comp1Position": 3 },
+    { "term": "personal injury virginia beach",            "position": 4,  "volume": 150,  "kd": 42, "comp1Position": 1 },
+    { "term": "virginia beach car accident lawyer",        "position": 5,  "volume": 200,  "kd": 2,  "comp1Position": 1 },
+    { "term": "auto accident lawyer virginia beach",       "position": 3,  "volume": 300,  "kd": 2,  "comp1Position": 1 },
+    { "term": "virginia beach personal injury lawyer",     "position": 5,  "volume": 250,  "kd": 0,  "comp1Position": 2 },
+    { "term": "lawyer personal injury near me",            "position": 21, "volume": 6400, "kd": 56, "comp1Position": 4 },
+    { "term": "wrongful death lawyer virginia beach",      "position": 3,  "volume": 150,  "kd": 0,  "comp1Position": 2 }
+  ],
+
+  "aiQueries": [
+    "personal injury lawyer Virginia Beach VA",
+    "best car accident attorney Virginia Beach",
+    "personal injury attorney near me Virginia",
+    "car accident lawyer Virginia Beach Virginia",
+    "FELA railroad injury lawyer Virginia"
+  ],
+
+  "aiGrid": [
+    { "chatgpt": "Cited",     "claude": "Not Cited", "perplexity": "Not Cited", "gemini": "Not Cited", "copilot": "Partial"   },
+    { "chatgpt": "Not Cited", "claude": "Not Cited", "perplexity": "Not Cited", "gemini": "Cited",     "copilot": "Not Cited" },
+    { "chatgpt": "Not Cited", "claude": "Partial",   "perplexity": "Not Cited", "gemini": "Not Cited", "copilot": "Not Cited" },
+    { "chatgpt": "Not Cited", "claude": "Not Cited", "perplexity": "Not Cited", "gemini": "Not Cited", "copilot": "Cited"     },
+    { "chatgpt": "Partial",   "claude": "Not Cited", "perplexity": "Cited",     "gemini": "Not Cited", "copilot": "Not Cited" }
+  ],
+
+  "pricing": {
+    "tiers": [
+      {
+        "name": "FOUNDATION", "tag": "Entry-level",
+        "p6": "$2,875", "p12": "$2,500", "saveMo": "$375",
+        "highlighted": false,
+        "items": [
+          "Technical SEO + schema implementation",
+          "4 practice area page rewrites",
+          "Local citation cleanup",
+          "GBP optimization",
+          "Virginia-specific keyword strategy",
+          "Monthly rank tracking + report"
+        ]
+      },
+      {
+        "name": "GROWTH", "tag": "Most popular",
+        "p6": "$5,750", "p12": "$5,000", "saveMo": "$750",
+        "highlighted": true,
+        "items": [
+          "Everything in Foundation",
+          "8 practice area pages + 4 blog/FAQ posts",
+          "AI citation source outreach",
+          "Link building (4\u20136 placements/mo)",
+          "FELA/railroad niche authority build",
+          "Brand Radar monitoring + quarterly call"
+        ]
+      },
+      {
+        "name": "AUTHORITY", "tag": "Market dominance",
+        "p6": "$8,625", "p12": "$7,500", "saveMo": "$1,125",
+        "highlighted": false,
+        "items": [
+          "Everything in Growth",
+          "12 content assets per month",
+          "AI Visibility deep dive (monthly)",
+          "Competitor vulnerability tracking",
+          "Featured snippet + AIO targeting",
+          "Monthly CEO report + call"
+        ]
+      }
+    ]
+  },
+
+  "notificationRecipients": []
+}
