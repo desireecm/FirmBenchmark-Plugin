@@ -1,0 +1,6 @@
+node_modules/
+scripts/node_modules/
+scripts/package.json
+scripts/package-lock.json
+*.pyc
+__pycache__/
