@@ -1,0 +1,359 @@
+// EI Hours Tracker data model (PLAN.md §5).
+// Money is integer cents, hours are Decimal(8,2), calendar dates are @db.Date.
+// Month boundaries are America/Chicago; months are stored as the 1st (YYYY-MM-01).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ClientStatus {
+  ACTIVE
+  PAUSED
+  ARCHIVED
+}
+
+enum EngagementType {
+  MONTHLY_RETAINER
+  ONE_TIME_FIXED
+  ONE_TIME_HOURLY
+  AD_HOC_HOURLY
+}
+
+enum EngagementStatus {
+  ACTIVE
+  COMPLETE
+  CANCELLED
+}
+
+enum OveragePolicy {
+  BILL_AT_RATE
+  ABSORB
+  REVIEW
+}
+
+enum MatchStatus {
+  MATCHED
+  UNMATCHED_CLIENT
+  UNMATCHED_USER
+  IGNORED
+}
+
+enum TaskStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  BLOCKED
+  DONE
+  SKIPPED
+}
+
+enum SyncStatus {
+  RUNNING
+  SUCCESS
+  PARTIAL
+  FAILED
+}
+
+model User {
+  id                    String   @id @default(cuid())
+  email                 String   @unique
+  name                  String
+  isAdmin               Boolean  @default(false)
+  isActive              Boolean  @default(true)
+  // Exact Minute7 "employee" strings mapped to this user.
+  minute7EmployeeNames  String[]
+  monthlyBillableTarget Decimal? @db.Decimal(8, 2)
+  weeklyCapacityHours   Decimal? @db.Decimal(8, 2)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  primaryClients Client[]       @relation("PrimaryContact")
+  timeEntries    TimeEntry[]
+  completedTasks Task[]         @relation("CompletedBy")
+  closedMonths   MonthSnapshot[]
+  auditLogs      AuditLog[]
+}
+
+model Client {
+  id                     String       @id @default(cuid())
+  name                   String       @unique
+  shortName              String?
+  status                 ClientStatus @default(ACTIVE)
+  defaultHourlyRateCents Int          @default(16500)
+  primaryContactUserId   String?
+  natureOfWork           String[]
+  notes                  String?
+  zohoProjectId          String?
+  createdAt              DateTime     @default(now())
+  updatedAt              DateTime     @updatedAt
+
+  primaryContact User?                @relation("PrimaryContact", fields: [primaryContactUserId], references: [id])
+  aliases        ClientMinute7Alias[]
+  engagements    Engagement[]
+  timeEntries    TimeEntry[]
+}
+
+// Maps Minute7 customer strings (including "Customer:Job" sub-jobs) to a client.
+model ClientMinute7Alias {
+  id              String   @id @default(cuid())
+  clientId        String
+  minute7Customer String   @unique
+  engagementId    String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  client     Client      @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  engagement Engagement? @relation(fields: [engagementId], references: [id], onDelete: SetNull)
+}
+
+// Anything billable: a retainer, a one-off project, or ad-hoc hourly work.
+model Engagement {
+  id                   String           @id @default(cuid())
+  clientId             String
+  type                 EngagementType
+  name                 String
+  status               EngagementStatus @default(ACTIVE)
+  startDate            DateTime         @db.Date
+  endDate              DateTime?        @db.Date
+  // ONE_TIME_FIXED lifetime budget
+  totalBudgetCents     Int?
+  totalBudgetHours     Decimal?         @db.Decimal(8, 2)
+  // Override; otherwise the client's default rate.
+  hourlyRateCents      Int?
+  overagePolicy        OveragePolicy    @default(REVIEW)
+  countsTowardRetainer Boolean          @default(true)
+  createdAt            DateTime         @default(now())
+  updatedAt            DateTime         @updatedAt
+
+  client        Client               @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  terms         RetainerTerm[]
+  allocations   Allocation[]
+  aliases       ClientMinute7Alias[]
+  timeEntries   TimeEntry[]
+  taskTemplates TaskTemplate[]
+  tasks         Task[]
+  snapshots     MonthSnapshot[]
+  alerts        AlertLog[]
+
+  @@index([clientId, status])
+}
+
+// Effective-dated monthly terms for MONTHLY_RETAINER engagements.
+// monthlyHours = monthlyHoursOverride ?? round(monthlyAmountCents / hourlyRateCents, 2)
+model RetainerTerm {
+  id                   String    @id @default(cuid())
+  engagementId         String
+  effectiveFrom        DateTime  @db.Date
+  effectiveTo          DateTime? @db.Date
+  monthlyAmountCents   Int
+  hourlyRateCents      Int
+  monthlyHoursOverride Decimal?  @db.Decimal(8, 2)
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  engagement Engagement @relation(fields: [engagementId], references: [id], onDelete: Cascade)
+
+  @@index([engagementId, effectiveFrom])
+}
+
+// Planned hours per person (or people, e.g. "Hazar & Chris") per engagement per month.
+model Allocation {
+  id           String   @id @default(cuid())
+  engagementId String
+  month        DateTime @db.Date
+  userIds      String[]
+  plannedHours Decimal  @db.Decimal(8, 2)
+  natureOfWork String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  engagement Engagement @relation(fields: [engagementId], references: [id], onDelete: Cascade)
+
+  @@index([engagementId, month])
+}
+
+// Mirrored from Minute7 time_json.
+model TimeEntry {
+  id                String      @id @default(cuid())
+  minute7Uuid       String      @unique
+  date              DateTime    @db.Date
+  durationHours     Decimal     @db.Decimal(8, 2)
+  minute7Customer   String
+  minute7Employee   String
+  minute7Service    String?
+  minute7Class      String?
+  description       String?
+  note              String?
+  billable          Boolean
+  approved          Boolean
+  exported          Boolean
+  locked            Boolean
+  userId            String?
+  clientId          String?
+  engagementId      String?
+  matchStatus       MatchStatus
+  needsReview       Boolean     @default(false)
+  isDeletedInSource Boolean     @default(false)
+  rawJson           Json
+  lastSeenAt        DateTime
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+
+  user       User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+  client     Client?     @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  engagement Engagement? @relation(fields: [engagementId], references: [id], onDelete: SetNull)
+
+  @@index([date])
+  @@index([engagementId, date])
+  @@index([clientId, date])
+  @@index([userId, date])
+  @@index([matchStatus])
+}
+
+// The recurring monthly task list.
+model TaskTemplate {
+  id                 String   @id @default(cuid())
+  engagementId       String
+  title              String
+  quantity           String?
+  defaultAssigneeIds String[]
+  estimatedHours     Decimal? @db.Decimal(8, 2)
+  natureOfWork       String?
+  dueDayOfMonth      Int?
+  isActive           Boolean  @default(true)
+  sortOrder          Int      @default(0)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  engagement Engagement @relation(fields: [engagementId], references: [id], onDelete: Cascade)
+  tasks      Task[]
+}
+
+// One row per template per month, plus ad-hoc tasks (templateId = null).
+model Task {
+  id                String     @id @default(cuid())
+  templateId        String?
+  engagementId      String
+  month             DateTime   @db.Date
+  title             String
+  quantity          String?
+  assigneeIds       String[]
+  estimatedHours    Decimal?   @db.Decimal(8, 2)
+  dueDate           DateTime?  @db.Date
+  status            TaskStatus @default(NOT_STARTED)
+  completedAt       DateTime?
+  completedByUserId String?
+  isOutOfScope      Boolean    @default(false)
+  notes             String?
+  zohoTaskId        String?
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+
+  template    TaskTemplate? @relation(fields: [templateId], references: [id], onDelete: SetNull)
+  engagement  Engagement    @relation(fields: [engagementId], references: [id], onDelete: Cascade)
+  completedBy User?         @relation("CompletedBy", fields: [completedByUserId], references: [id], onDelete: SetNull)
+
+  // Makes monthly generation idempotent: one task per template per month.
+  @@unique([templateId, month])
+  @@index([engagementId, month])
+}
+
+// Frozen at month close; used for historical reports.
+model MonthSnapshot {
+  id                 String   @id @default(cuid())
+  engagementId       String
+  month              DateTime @db.Date
+  budgetHours        Decimal  @db.Decimal(8, 2)
+  usedHours          Decimal  @db.Decimal(8, 2)
+  nonBillableHours   Decimal  @db.Decimal(8, 2)
+  overageHours       Decimal  @db.Decimal(8, 2)
+  overageAmountCents Int
+  remainingHours     Decimal  @db.Decimal(8, 2)
+  tasksTotal         Int
+  tasksDone          Int
+  closedAt           DateTime
+  closedByUserId     String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  engagement Engagement @relation(fields: [engagementId], references: [id], onDelete: Cascade)
+  closedBy   User?      @relation(fields: [closedByUserId], references: [id], onDelete: SetNull)
+
+  @@unique([engagementId, month])
+}
+
+model SyncRun {
+  id            String     @id @default(cuid())
+  startedAt     DateTime   @default(now())
+  finishedAt    DateTime?
+  status        SyncStatus @default(RUNNING)
+  windowStart   DateTime   @db.Date
+  windowEnd     DateTime   @db.Date
+  fetched       Int        @default(0)
+  inserted      Int        @default(0)
+  updated       Int        @default(0)
+  markedDeleted Int        @default(0)
+  unmatched     Int        @default(0)
+  errorMessage  String?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+}
+
+// Prevents duplicate alerts and records what was sent.
+model AlertLog {
+  id            String   @id @default(cuid())
+  type          String
+  engagementId  String?
+  userId        String?
+  month         DateTime @db.Date
+  checkpointDay Int?
+  // Built from type|engagement|user|month|checkpoint so a repeat insert fails.
+  dedupeKey     String   @unique
+  sentAt        DateTime
+  recipients    String[]
+  payloadJson   Json
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  engagement Engagement? @relation(fields: [engagementId], references: [id], onDelete: SetNull)
+}
+
+// Key/value admin settings (thresholds, recipients, checkpoint days…).
+model AppSetting {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Company holidays excluded from business-day pace math.
+model Holiday {
+  id        String   @id @default(cuid())
+  date      DateTime @unique @db.Date
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Who changed retainers, rates, mappings, task status.
+model AuditLog {
+  id         String   @id @default(cuid())
+  userId     String?
+  entity     String
+  entityId   String
+  action     String
+  beforeJson Json?
+  afterJson  Json?
+  at         DateTime @default(now())
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([entity, entityId])
+}
